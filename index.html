@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Temperature Slider</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div id="box">
+		<div id="name">
+			<span>Temperature</span>
+		 	<span>Control</span>
+		</div>
+		<div id="lane">
+			<span id="knob"></span>
+		</div>
+	</div>
+	<span id="value">0℃</span>
+	<script>
+		const knob = document.querySelector('#knob');
+		const knob_style = window.getComputedStyle(knob);
+		const knob_before_style = window.getComputedStyle(knob, '::before');
+		const lane = document.querySelector('#lane');
+		const lane_style = window.getComputedStyle(lane);
+		const lane_width = parseInt(lane_style.width);
+		const knob_width = parseInt(knob_style.width);
+		const knob_before_width = parseInt(knob_before_style.width);
+		const knob_left_end = -((knob_width - knob_before_width) / 2);
+		const knob_right_end = lane_width - knob_width - knob_left_end;
+		let mouse_over = false;
+		let min = 0;
+		let max = 100;
+		const value = document.querySelector('#value');
+
+		knob.addEventListener("change", (e) => {
+			value.textContent = `${e.detail.temperature}℃`;
+		});
+
+		const onDrag = (e) => {
+			e.preventDefault();
+			const left = parseInt(knob_style.left);
+			let x = left + e.movementX;
+			if(x < knob_left_end) {
+				x = knob_left_end;
+			} else if(x > knob_right_end) {
+				x = knob_right_end;
+			}
+			knob.style.left = `${x}px`;
+			const temperature = parseInt((left - knob_left_end) / ((knob_right_end - knob_left_end) / (max - min)));
+			knob.dispatchEvent(new CustomEvent("change", {
+				detail: {temperature},
+			}));
+		}
+		knob.addEventListener('mousedown', (e) => {
+			document.onmousemove = onDrag;
+		});
+		document.addEventListener('mouseup', (e) => {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		});
+	</script>
+</body>
+</html>
